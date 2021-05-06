@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:t24haber/UI/custom_news_page.dart';
 
-//Main
+//Mainn
 void main() {
   runApp(MyApp());
 }
