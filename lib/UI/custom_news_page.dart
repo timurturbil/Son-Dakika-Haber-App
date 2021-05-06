@@ -24,8 +24,9 @@ class _CustomNewsPageState extends State<CustomNewsPage> {
     print("çalıştı");
     try {
       final client = http.Client();
-      final response =
-          await client.get(Uri.https("t24.com.tr", "${widget.route == null ? "rss": widget.route}"));
+      final response = await client.get(Uri.https(
+          "t24.com.tr", "${widget.route == null ? "rss" : widget.route}"));
+      print("$response my responseeeeeeee");
       return RssFeed.parse(response.body);
     } catch (e) {
       //
@@ -82,7 +83,9 @@ class _CustomNewsPageState extends State<CustomNewsPage> {
             color: Colors.white,
             child: ListTile(
               title: Text(_feed!.items![index].title!),
-              subtitle: Text(_feed!.items![index].pubDate == null ? "": _feed!.items![index].pubDate.toString()),
+              subtitle: Text(_feed!.items![index].pubDate == null
+                  ? ""
+                  : _feed!.items![index].pubDate.toString()),
               leading:
                   thumbnail(_feed!.items![index].enclosure!.url.toString()),
               /* trailing: Icon(Icons.keyboard_arrow_right), */
@@ -108,7 +111,9 @@ class _CustomNewsPageState extends State<CustomNewsPage> {
 
     return Scaffold(
       drawer: MyDrawer(),
-      appBar: AppBar(title: Text("T24 ${widget.topic == null ? "Son Dakika Haberler": widget.topic}")),
+      appBar: AppBar(
+          title: Text(
+              "T24 ${widget.topic == null ? "Son Dakika Haberler" : widget.topic}")),
       body: body(context),
     );
   }

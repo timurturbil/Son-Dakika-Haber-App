@@ -10,7 +10,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'T24 Son Dakika Haber',
+      title: 'T24 Son Dakika Haberlerim',
       theme: new ThemeData(scaffoldBackgroundColor: Colors.grey[300]),
       home: CustomNewsPage(), 
     );

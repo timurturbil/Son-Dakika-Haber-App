@@ -56,7 +56,7 @@ class _MyDrawerState extends State<MyDrawer> {
               style: const TextStyle(color: Colors.black),
               underline: Container(
                 height: 2,
-                color: Colors.black,
+                color: Colors.grey[200],
               ),
               onChanged: (String? newValue) => Navigator.push(
                 context,
