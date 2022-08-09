@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:son_dakika_haber/UI/news_detail.dart';
 import 'package:son_dakika_haber/components/drawer.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -35,14 +37,15 @@ class _CustomNewsPageState extends State<CustomNewsPage> {
     "faitarslan@cnnturk.com.tr",
     "rasimoz@cnnturk.com.tr",
     "aydintarak@cnnturk.com.tr",
-    "kemaltukenmez@cnnturk.com.tr"
-        "hakanerarslan@cnnturk.com.tr"
+    "kemaltukenmez@cnnturk.com.tr",
+    "hakanerarslan@cnnturk.com.tr"
   ];
   Future<RssFeed?> loadFeed(context) async {
     try {
       final client = http.Client();
-      final response = await client.get(Uri.https("www.cnnturk.com",
-          "feed/rss/${widget.route == null ? "all" : widget.route}/news"));
+      final response = await client.get(Uri.https("www.t24.com.tr",
+          "rss${widget.route == null ? "" : "/haber/" + widget.route!}"));
+      print("response.statusCode: ${response.statusCode}");
       return RssFeed.parse(utf8
           .decode(response.bodyBytes)
           .replaceAll("&#39;", "'")
@@ -76,48 +79,95 @@ class _CustomNewsPageState extends State<CustomNewsPage> {
   thumbnail(imageUrl) {
     return Padding(
       padding: EdgeInsets.only(left: 0),
-      child: Image.network(
-        imageUrl,
-        height: 50,
-        width: 90,
-        alignment: Alignment.center,
-        fit: BoxFit.fill,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(2),
+        child: CachedNetworkImage(
+          imageUrl: imageUrl,
+          alignment: Alignment.center,
+          fit: BoxFit.fill,
+          placeholder: (context, url) => Container(
+            width: MediaQuery.of(context).size.width / 2,
+            height: MediaQuery.of(context).size.height / 8,
+            child: Center(child: CircularProgressIndicator()),
+          ),
+          errorWidget: (context, url, error) => Icon(Icons.error),
+        ),
       ),
     );
   }
 
   list() {
-    return ListView.builder(
+    return GridView.builder(
+      shrinkWrap: true,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 0.0,
+        mainAxisSpacing: 0.0,
+      ),
       itemCount: _feed!.items!.length,
       itemBuilder: (BuildContext context, int index) {
-        return Card(
-            margin: EdgeInsets.fromLTRB(15, 5, 15, 5),
-            color: Colors.white,
-            child: ListTile(
-              title: Text(_feed!.items![index].title!,
-                  style: TextStyle(fontSize: 13)),
-              subtitle: Text("Haber Editörü: ${publishers[random.nextInt(8)]}",
-                  style: TextStyle(fontSize: 11)),
-              leading: _feed!.items![index].image == null
-                  ? Container(
-                      height: 50,
-                      width: 90,
-                      decoration: BoxDecoration(
-                          image: DecorationImage(
-                              fit: BoxFit.contain,
-                              image: AssetImage('assets/empty_image.jpg'))))
-                  : thumbnail(_feed!.items![index].image.toString()),
-              trailing: Icon(Icons.keyboard_arrow_right),
-              contentPadding: EdgeInsets.all(5.0),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          WebViewExample(_feed!.items![index].link!)),
-                );
-              },
-            ));
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                      WebViewExample(_feed!.items![index].link!)),
+            );
+          },
+          child: Card(
+              margin: EdgeInsets.fromLTRB(5, 5, 5, 5),
+              elevation: 5,
+              color: Colors.white,
+              child: Container(
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(2), 
+                    color: Colors.white 
+                    ),
+                child: Column(
+                  children: [
+                    thumbnail(_feed!.items![index].enclosure!.url),
+                    // SizedBox(
+                    //   height: 10,
+                    // ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                          _feed!.items![index].title!.length > 40
+                              ? _feed!.items![index].title!.substring(0, 40) +
+                                  "..."
+                              : _feed!.items![index].title!,
+                          style: TextStyle(fontSize: 13)),
+                    )
+                  ],
+                ),
+              )),
+        );
+        // child: ListTile(
+        //   title: Text(_feed!.items![index].title!,
+        //       style: TextStyle(fontSize: 13)),
+        //   subtitle: Text("Haber Editörü: ${publishers[random.nextInt(8)]}",
+        //       style: TextStyle(fontSize: 11)),
+        //   leading: _feed!.items![index].enclosure!.url == null
+        //       ? Container(
+        //           height: 50,
+        //           width: 90,
+        //           decoration: BoxDecoration(
+        //               image: DecorationImage(
+        //                   fit: BoxFit.contain,
+        //                   image: AssetImage('assets/empty_image.jpg'))))
+        //       : thumbnail(_feed!.items![index].enclosure!.url),
+        //   trailing: Icon(Icons.keyboard_arrow_right),
+        //   contentPadding: EdgeInsets.all(5.0),
+        //   onTap: () {
+        //     Navigator.push(
+        //       context,
+        //       MaterialPageRoute(
+        //           builder: (context) =>
+        //               WebViewExample(_feed!.items![index].link!)),
+        //     );
+        //   },
+        // ));
       },
     );
   }
@@ -136,6 +186,7 @@ class _CustomNewsPageState extends State<CustomNewsPage> {
       drawer: MyDrawer(),
       appBar: AppBar(
           backgroundColor: Colors.black54,
+          centerTitle: true,
           title: Text(
               "${widget.topic == null ? "Son Dakika Haberler" : widget.topic}")),
       body: body(context),
